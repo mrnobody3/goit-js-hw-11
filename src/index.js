@@ -12,10 +12,12 @@ btnLoadMore.addEventListener('click', onLoadMoreImg);
 
 let numOfPage = 1;
 let searchValue = '';
+
 async function onSearchForm(e) {
   e.preventDefault();
   resetPages();
   resetRender();
+
   searchValue = e.target.elements.searchQuery.value.trim();
 
   if (!searchValue) {
@@ -24,8 +26,8 @@ async function onSearchForm(e) {
     return;
   }
 
-  fetchImg(searchValue, numOfPage).then(res => {
-    const markup = markupCard(res.data.hits);
+  fetchImg(searchValue, numOfPage).then(({ data }) => {
+    const markup = markupCard(data.hits);
 
     if (markup.length === 0) {
       onHideBtn();
@@ -34,7 +36,8 @@ async function onSearchForm(e) {
       );
       return;
     }
-    Notiflix.Notify.success(`Hooray! We found ${res.data.totalHits} images. `);
+
+    Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images. `);
     onShowBtn();
 
     renderMarkup(markup);
@@ -42,7 +45,7 @@ async function onSearchForm(e) {
       captionsData: 'alt',
       captionDelay: 250,
     });
-    if (numOfPage * PER_PAGE >= res.data.totalHits) {
+    if (numOfPage * PER_PAGE >= data.totalHits) {
       onHideBtn();
       return;
     }
@@ -57,17 +60,20 @@ function renderMarkup(str = '') {
 
 function onLoadMoreImg(e) {
   numOfPage += 1;
-  fetchImg(searchValue, numOfPage).then(res => {
-    if (numOfPage * PER_PAGE >= res.data.totalHits) {
+  fetchImg(searchValue, numOfPage).then(({ data }) => {
+    if (numOfPage * PER_PAGE >= data.totalHits) {
       onHideBtn();
       Notiflix.Notify.warning(`We're sorry, but you've reached the end of search results.`);
     }
-    const markup = markupCard(res.data.hits);
+    const markup = markupCard(data.hits);
+
     renderMarkup(markup);
+
     let lightbox = new SimpleLightbox('.gallery a', {
       captionsData: 'alt',
       captionDelay: 250,
     });
+
     lightbox.refresh();
     const { height: cardHeight } = document
       .querySelector('.gallery')
@@ -91,6 +97,7 @@ function resetRender() {
 function onShowBtn() {
   btnLoadMore.classList.remove('visually-hidden');
 }
+
 function onHideBtn() {
   btnLoadMore.classList.add('visually-hidden');
 }

@@ -3,7 +3,7 @@ function markupCard(arr) {
     .map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
       return `<a class="gallery__link" href="${largeImageURL}">
       <div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+  <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="info">
     <p class="info-item">
       <b>Likes</b> ${likes}
