@@ -13,6 +13,11 @@ btnLoadMore.addEventListener('click', onLoadMoreImg);
 let numOfPage = 1;
 let searchValue = '';
 
+let lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+
 async function onSearchForm(e) {
   e.preventDefault();
   resetPages();
@@ -25,8 +30,12 @@ async function onSearchForm(e) {
     formRef.reset();
     return;
   }
+  // fetchImg(searchValue, numOfPage).then(({ data }) => {
 
-  fetchImg(searchValue, numOfPage).then(({ data }) => {
+  try {
+    const newImg = await fetchImg(searchValue, numOfPage);
+    const { data } = newImg;
+
     const markup = markupCard(data.hits);
 
     if (markup.length === 0) {
@@ -41,15 +50,17 @@ async function onSearchForm(e) {
     onShowBtn();
 
     renderMarkup(markup);
-    let lightbox = new SimpleLightbox('.gallery a', {
-      captionsData: 'alt',
-      captionDelay: 250,
-    });
+
+    lightbox.refresh();
+
     if (numOfPage * PER_PAGE >= data.totalHits) {
       onHideBtn();
       return;
     }
-  });
+  } catch (error) {
+    console.log(error);
+  }
+  // });
 
   formRef.reset();
 }
@@ -58,9 +69,11 @@ function renderMarkup(str = '') {
   galleryRef.insertAdjacentHTML('beforeend', str);
 }
 
-function onLoadMoreImg(e) {
-  numOfPage += 1;
-  fetchImg(searchValue, numOfPage).then(({ data }) => {
+async function onLoadMoreImg(e) {
+  try {
+    numOfPage += 1;
+    const newImg = await fetchImg(searchValue, numOfPage);
+    const { data } = newImg;
     if (numOfPage * PER_PAGE >= data.totalHits) {
       onHideBtn();
       Notiflix.Notify.warning(`We're sorry, but you've reached the end of search results.`);
@@ -68,11 +81,6 @@ function onLoadMoreImg(e) {
     const markup = markupCard(data.hits);
 
     renderMarkup(markup);
-
-    let lightbox = new SimpleLightbox('.gallery a', {
-      captionsData: 'alt',
-      captionDelay: 250,
-    });
 
     lightbox.refresh();
     const { height: cardHeight } = document
@@ -83,7 +91,9 @@ function onLoadMoreImg(e) {
       top: cardHeight * 2,
       behavior: 'smooth',
     });
-  });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function resetPages() {
